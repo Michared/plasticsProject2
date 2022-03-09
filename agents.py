@@ -19,7 +19,7 @@ class Stand(Agent):
         super().__init__(unique_id, model)
         self.pos = pos
         self.condition = "Stand"
-
+    '''''
     def sell_drink(self, Visitor):
         if Visitor.cup is not None:
             print('Cup gets returned')
@@ -32,7 +32,7 @@ class Stand(Agent):
         self.condition = "HasCup"
         print('Buying cup')
         self.getting_drink = False  # Mission accomplished
-
+    '''''
 
 class Cup(Agent):
     '''
@@ -137,9 +137,9 @@ class Visitor(Agent):
         '''
         print('Dropping cup')
 
-    '''''
+
     def buy_drink(self):
-        Buy new drink. If Visitor already has a cup, this cup is returned.
+        #Buy new drink. If Visitor already has a cup, this cup is returned.
 
 
         if self.cup is not None:
@@ -152,7 +152,7 @@ class Visitor(Agent):
         self.condition = "HasCup"
         print('Buying cup')
         self.getting_drink = False # Mission accomplished
-    '''''
+
 
     def reduce_thirst(self):
         '''
