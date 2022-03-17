@@ -88,6 +88,7 @@ class Visitor(Agent):
         self.cup = None
         self.has_cup = 0
         self.condition = "HasNoCup"
+        self.buying_drink = False
 
     def random_move(self):
         '''
@@ -142,7 +143,9 @@ class Visitor(Agent):
 
     def buy_drink(self):
         #Buy new drink. If Visitor already has a cup, this cup is returned.
-
+        self.buying_drink = False
+        if self.unique_id == "v1":
+            print(self.unique_id, "ik stop nu met het halen van een drankje")
         if self.cup is not None:
             if self.unique_id == "v1":
                 print(self.unique_id,'Returning cup')
@@ -158,6 +161,9 @@ class Visitor(Agent):
 
     def getting_drink(self):
         goal = self.find_stand()
+        self.buying_drink = True
+        if self.unique_id == "v1":
+            print(self.unique_id, "ik ben nu een drankje aan het halen")
         if self.pos == goal:
             self.buy_drink()
         else:
@@ -178,8 +184,10 @@ class Visitor(Agent):
 
     def step(self):
         self.has_cup = random.randrange(0, 2)
+        if self.buying_drink:
+            self.getting_drink()
         #the more thirsty you are the more likely you are to take a sip
-        if self.thirst >= 5:
+        if self.thirst >= 5 and not self.buying_drink:
             if self.cup is None:
                 self.getting_drink()
             else:
@@ -187,7 +195,6 @@ class Visitor(Agent):
                     self.reduce_thirst()  # Decide and act to reduce thirst
                 else:
                     self.getting_drink()
-
 
         else:
             self.random_move()
