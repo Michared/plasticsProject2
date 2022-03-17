@@ -12,6 +12,6 @@ from model import Festival
 # Run (press the green button in the gutter to run the script)
 if __name__ == '__main__':
     model = Festival()
-    for i in range(50):
+    for i in range(100):
         model.step()
     visualize_model(model)

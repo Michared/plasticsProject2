@@ -31,7 +31,6 @@ class Stand(Agent):
         Visitor.cup = a
         Visitor.condition = "HasCup"
         print('Selling cup')
-        Visitor.getting_drink = False  # Mission accomplished
 
 
 class Cup(Agent):
@@ -85,7 +84,6 @@ class Visitor(Agent):
         '''
 
         super().__init__(unique_id, model)
-        self.getting_drink = False
         self.thirst = 0
         self.cup = None
         self.has_cup = 0
@@ -120,7 +118,7 @@ class Visitor(Agent):
 
         # Now move
         if self.unique_id == "v1":
-            print(self.unique_id, 'current position is ' + str(self.pos))
+            print(self.unique_id, 'current position is ' + str(self.pos), "my thirst is", self.thirst)
         self.model.grid.move_agent(self, tuple(new))
         if self.unique_id == "v1":
             print(self.unique_id,'new position is ' + str(self.pos))
@@ -145,9 +143,9 @@ class Visitor(Agent):
     def buy_drink(self):
         #Buy new drink. If Visitor already has a cup, this cup is returned.
 
-
         if self.cup is not None:
-            print('Returning cup')
+            if self.unique_id == "v1":
+                print(self.unique_id,'Returning cup')
             self.model.schedule.remove(self.cup) # Return current cup
             self.model.cups_returned += 1
         a = Cup(self.model) # doesn't work yet
@@ -156,25 +154,18 @@ class Visitor(Agent):
         self.condition = "HasCup"
         if self.unique_id == "v1":
             print(self.unique_id,'Buying cup')
-        self.getting_drink = False # Mission accomplished
 
+
+    def getting_drink(self):
+        goal = self.find_stand()
+        if self.pos == goal:
+            self.buy_drink()
+        else:
+            self.move_towards(goal)
 
     def reduce_thirst(self):
-        '''
-        Drink if possible, otherwise go to a stand or (if already at stand) buy a drink
-        '''
 
-        if self.getting_drink:
-            goal = self.find_stand()
-            if self.pos == goal:
-                self.buy_drink()
-            else:
-                self.move_towards(goal)
-            return  # Done, skip the rest of this function
-
-        # This only happens if not already on their way to Stand
-        if self.cup is not None:
-            if self.cup.full > 0.0:
+        if self.cup is not None and self.cup.full > 0.0:
                 #if random.randint(self.th)
                 # Take sip from cup
                 self.cup.full -= 0.5
@@ -184,25 +175,27 @@ class Visitor(Agent):
                 # Now move
                 self.random_move()
                 return
-        else:
-            if self.unique_id == "v1":
-                print(self.unique_id, 'getting drink now')
-            self.condition = "Empty"
-            self.getting_drink = True
-            #self.reduce_thirst()  # Run this function again
 
     def step(self):
-        self.has_cup = random.randrange(0, 2, 1)
+        self.has_cup = random.randrange(0, 2)
         #the more thirsty you are the more likely you are to take a sip
-        if self.thirst > 10:
-            self.reduce_thirst()  # Decide and act to reduce thirst
+        if self.thirst >= 5:
+            if self.cup is None:
+                self.getting_drink()
+            else:
+                if self.cup.full > 0:
+                    self.reduce_thirst()  # Decide and act to reduce thirst
+                else:
+                    self.getting_drink()
+
+
         else:
             self.random_move()
         # if self.cup is not None:
         # if random.random() < 0.8:
         #     self.drop_cup()
         if self.thirst < 10:
-            self.thirst += 1
+            self.thirst += 0.5
 
         # The agent's step will go here.
         # For demonstration purposes we will print the agent's unique_id
