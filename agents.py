@@ -159,7 +159,7 @@ class Visitor(Agent):
             print(self.unique_id,'Buying cup')
 
 
-    def getting_drink(self):
+    def get_drink(self):
         goal = self.find_stand()
         self.buying_drink = True
         if self.unique_id == "v1":
@@ -185,16 +185,16 @@ class Visitor(Agent):
     def step(self):
         self.has_cup = random.randrange(0, 2)
         if self.buying_drink:
-            self.getting_drink()
+            self.get_drink()
         #the more thirsty you are the more likely you are to take a sip
         if self.thirst >= 5 and not self.buying_drink:
             if self.cup is None:
-                self.getting_drink()
+                self.get_drink()
             else:
                 if self.cup.full > 0:
                     self.reduce_thirst()  # Decide and act to reduce thirst
                 else:
-                    self.getting_drink()
+                    self.get_drink()
 
         else:
             self.random_move()
