@@ -7,13 +7,14 @@ from agents import Visitor, Stand
 class Festival (Model):
     """A model with some number of agents."""
 
-    def __init__(self, visitors=8, stands=((0, 6), (9, 4)), width=10, height=10):
+    def __init__(self, visitors=20, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
         self.num_visitors = visitors
         self.pos_stands = stands
         self.schedule = RandomActivation(self)
         self.grid = MultiGrid(height, width, True)
         self.cups_returned = 0
         self.cup_id = 0
+        self.cups_on_floor =0
 
         # Create agents
         for i in range(self.num_visitors):

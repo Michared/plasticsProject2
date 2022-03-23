@@ -57,6 +57,14 @@ class Cup(Agent):
         self.full = 1.0
         self.dirty = 0.0
         self.damaged = 0.0
+        self.on_floor = False
+
+
+    def step(self):
+        if self.on_floor == True:
+            if random.randint(1,10) == 1 and self.dirty < 1:
+                self.dirty += 0.1
+
 
 
 class Visitor(Agent):
@@ -86,7 +94,6 @@ class Visitor(Agent):
         super().__init__(unique_id, model)
         self.thirst = 0
         self.cup = None
-        self.has_cup = 0
         self.condition = "HasNoCup"
         self.buying_drink = False
 
@@ -138,7 +145,14 @@ class Visitor(Agent):
         '''
         Drop cup on the ground
         '''
-        print('Dropping cup')
+        
+        self.cup.on_floor = True
+        self.model.cups_on_floor += 1
+        self.cup.pos = self.pos
+        if self.unique_id == "v1":
+            print(self.unique_id, 'Dropping cup')
+            print(self.model.cups_on_floor)
+        self.cup = None
 
 
     def buy_drink(self):
@@ -151,6 +165,9 @@ class Visitor(Agent):
                 print(self.unique_id,'Returning cup')
             self.model.schedule.remove(self.cup) # Return current cup
             self.model.cups_returned += 1
+            if self.unique_id == "v1":
+                print("er zijn nu zoveel cups teruggebracht: ", self.model.cups_returned)
+
         a = Cup(self.model) # doesn't work yet
         self.model.schedule.add(a)
         self.cup = a
@@ -198,9 +215,9 @@ class Visitor(Agent):
 
         else:
             self.random_move()
-        # if self.cup is not None:
-        # if random.random() < 0.8:
-        #     self.drop_cup()
+        if self.cup is not None:
+            if random.random() < 0.2 and self.cup.full <= 0:
+                self.drop_cup()
         if self.thirst < 10:
             self.thirst += 0.5
 
