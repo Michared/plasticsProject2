@@ -37,8 +37,7 @@ def visualize_model(model, save=True, show=False):
     colorbar.set_ticklabels(['Empty', 'Visitor without cup', 'Visitor with cup', 'Stand'])
 
     # results = Festival.datacollector.get_model_vars_dataframe()
-    #
-    # ax[1] = sns.lineplot(data=results, ax=ax[1])
+    #ax[1] = sns.lineplot(data=model.cups_on_floor, ax=ax[1])
     # ax[1].set_xlabel("Steps")
     # ax[1].set_ylabel("Cups")
 

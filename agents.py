@@ -52,8 +52,6 @@ class Cup(Agent):
         id = model.cup_id
 
         super().__init__(id, model)
-        # self.pos = pos
-        # self.owner = owner
         self.full = 1.0
         self.dirty = 0.0
         self.damaged = 0.0
