@@ -76,7 +76,7 @@ class Visitor(Agent):
     y = None
     moore = True
 
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, willingness):
         '''
         Creates a new Visitor
 
@@ -94,6 +94,9 @@ class Visitor(Agent):
         self.cup = None
         self.condition = "HasNoCup"
         self.buying_drink = False
+        self.reluctance = willingness
+        if self.unique_id == "v1":
+            print(self.unique_id, "has a reluctance of", self.reluctance)
 
     def random_move(self):
         '''
@@ -148,7 +151,7 @@ class Visitor(Agent):
         self.model.cups_on_floor += 1
         self.cup.pos = self.pos
         if self.unique_id == "v1":
-            print(self.unique_id, 'Dropping cup')
+            print(self.unique_id, 'DROPPING CUP!')
             print(self.model.cups_on_floor)
         self.cup = None
 
@@ -157,14 +160,14 @@ class Visitor(Agent):
         #Buy new drink. If Visitor already has a cup, this cup is returned.
         self.buying_drink = False
         if self.unique_id == "v1":
-            print(self.unique_id, "ik stop nu met het halen van een drankje")
+            print(self.unique_id, "I'm done with getting a drink")
         if self.cup is not None:
             if self.unique_id == "v1":
-                print(self.unique_id,'Returning cup')
+                print(self.unique_id,'RETURNING CUP!')
             self.model.schedule.remove(self.cup) # Return current cup
             self.model.cups_returned += 1
             if self.unique_id == "v1":
-                print("er zijn nu zoveel cups teruggebracht: ", self.model.cups_returned)
+                print("cups that have been returned: ", self.model.cups_returned)
 
         a = Cup(self.model) # doesn't work yet
         self.model.schedule.add(a)
@@ -178,7 +181,7 @@ class Visitor(Agent):
         goal = self.find_stand()
         self.buying_drink = True
         if self.unique_id == "v1":
-            print(self.unique_id, "ik ben nu een drankje aan het halen")
+            print(self.unique_id, "I am now getting a drink")
         if self.pos == goal:
             self.buy_drink()
         else:
@@ -198,7 +201,6 @@ class Visitor(Agent):
                 return
 
     def step(self):
-        self.has_cup = random.randrange(0, 2)
         if self.buying_drink:
             self.get_drink()
         #the more thirsty you are the more likely you are to take a sip
@@ -217,9 +219,11 @@ class Visitor(Agent):
 
         else:
             self.random_move()
+
         if self.cup is not None:
-            if random.random() < 0.2 and self.cup.full <= 0:
+            if self.reluctance > self.model.drinks_for_cup and self.cup.full <= 0:
                 self.drop_cup()
+
         if self.thirst < 10:
             self.thirst += 0.5
 

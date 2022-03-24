@@ -1,3 +1,5 @@
+import random
+
 from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation
@@ -19,7 +21,7 @@ def get_cup_count(model):
 class Festival (Model):
     """A model with some number of agents."""
 
-    def __init__(self, visitors=20, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
+    def __init__(self, visitors=20, drinks_for_cup=0.5, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
         self.num_visitors = visitors
         self.pos_stands = stands
         self.schedule = RandomActivation(self)
@@ -27,12 +29,16 @@ class Festival (Model):
         self.cups_returned = 0
         self.cup_id = 0
         self.cups_on_floor = 0
+        self.drinks_for_cup = drinks_for_cup
+
+        self.cups_on_floor = 0
         self.datacollector = DataCollector({"agent_count": lambda m: get_cup_count(self)})
 
         # Create agents
         for i in range(self.num_visitors):
             name = "v"+str(i)
-            a = Visitor(name, self)
+            reluctance = round(max(self.random.normalvariate(0.5, 0.5), 0), 1) # how many drinks in return for a cup would result in this agent returning the cup
+            a = Visitor(name, self, reluctance)
             self.schedule.add(a)
 
             #Add the agent to a random grid cell
