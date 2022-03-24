@@ -202,14 +202,18 @@ class Visitor(Agent):
         if self.buying_drink:
             self.get_drink()
         #the more thirsty you are the more likely you are to take a sip
-        if self.thirst >= 5 and not self.buying_drink:
+        elif self.thirst >= 5 and not self.buying_drink:
             if self.cup is None:
-                self.get_drink()
+                if random.randint(1, 4) == 1:
+                    self.get_drink()
+                else:
+                    self.random_move()
             else:
                 if self.cup.full > 0:
                     self.reduce_thirst()  # Decide and act to reduce thirst
                 else:
-                    self.get_drink()
+                    if random.randint(1,4) == 1:
+                        self.get_drink()
 
         else:
             self.random_move()

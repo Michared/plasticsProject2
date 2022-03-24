@@ -1,7 +1,19 @@
 from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation
-from agents import Visitor, Stand
+from agents import Visitor, Stand, Cup
+from mesa.datacollection import DataCollector
+
+"""Functies die de waardes van het model bijhouden."""
+def get_cup_count(model):
+    # get the number of cups on the floor
+    count = 0
+    for g in model.schedule.agents:
+        if isinstance(g, Cup):
+            if g.on_floor == True:
+                count += 1
+    return count
+
 
 
 class Festival (Model):
@@ -14,7 +26,8 @@ class Festival (Model):
         self.grid = MultiGrid(height, width, True)
         self.cups_returned = 0
         self.cup_id = 0
-        self.cups_on_floor =0
+        self.cups_on_floor = 0
+        self.datacollector = DataCollector({"agent_count": lambda m: get_cup_count(self)})
 
         # Create agents
         for i in range(self.num_visitors):
@@ -44,39 +57,11 @@ class Festival (Model):
 
         place_stands(*self.pos_stands, model=self)
 
-        # self.datacollector = DataCollector(
-        #     {"Cups": lambda m: m.schedule.get_type_count(Cup)})
 
     def step(self):
         """Advance the model by one step."""
         self.schedule.step()
-        # collect data
-        # self.datacollector.collect(self)
-
-#Poging tot visualisatie
-'''''
-hmap = hv.HoloMap()
-for i in range(10):
-    data = np.array([[value(c) for c in row] for row in Festival.grid.grid])
-    data = np.transpose(data)
-    data = np.flip(data, axis=0)
-    bounds = (0, 0, 5, 5)
-    hmap[i] = hv.Image(data, vdims=[hv.Dimension('a', range=(0, 21))], bounds=bounds).relabel('Grid').opts(cmap='bwr', xticks=[0], yticks=[0])
-'''''
-#Andere manier visualisatie
-'''''
-server = ModularServer(model,
-                       [model.grid],
-                       "Festival")
-server.port = 8521  # The default
-server.launch()
+        """Verzamel de data."""
+        self.datacollector.collect(self)
 
 
-def agent_portrayal(agent):
-    portrayal = {"Shape": "circle",
-                 "Filled": "true",
-                 "Layer": 0,
-                 "Color": "red",
-                 "r": 0.5}
-    return portrayal
-'''''
