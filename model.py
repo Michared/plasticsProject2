@@ -1,3 +1,5 @@
+import random
+
 from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation
@@ -7,19 +9,22 @@ from agents import Visitor, Stand
 class Festival (Model):
     """A model with some number of agents."""
 
-    def __init__(self, visitors=20, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
+    def __init__(self, visitors=20, drinks_for_cup=0.5, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
         self.num_visitors = visitors
         self.pos_stands = stands
         self.schedule = RandomActivation(self)
         self.grid = MultiGrid(height, width, True)
         self.cups_returned = 0
         self.cup_id = 0
-        self.cups_on_floor =0
+        self.cups_on_floor = 0
+        self.drinks_for_cup = drinks_for_cup
+
 
         # Create agents
         for i in range(self.num_visitors):
             name = "v"+str(i)
-            a = Visitor(name, self)
+            reluctance = round(max(self.random.normalvariate(0.5, 0.5), 0), 1) # how many drinks in return for a cup would result in this agent returning the cup
+            a = Visitor(name, self, reluctance)
             self.schedule.add(a)
 
             #Add the agent to a random grid cell
@@ -53,30 +58,3 @@ class Festival (Model):
         # collect data
         # self.datacollector.collect(self)
 
-#Poging tot visualisatie
-'''''
-hmap = hv.HoloMap()
-for i in range(10):
-    data = np.array([[value(c) for c in row] for row in Festival.grid.grid])
-    data = np.transpose(data)
-    data = np.flip(data, axis=0)
-    bounds = (0, 0, 5, 5)
-    hmap[i] = hv.Image(data, vdims=[hv.Dimension('a', range=(0, 21))], bounds=bounds).relabel('Grid').opts(cmap='bwr', xticks=[0], yticks=[0])
-'''''
-#Andere manier visualisatie
-'''''
-server = ModularServer(model,
-                       [model.grid],
-                       "Festival")
-server.port = 8521  # The default
-server.launch()
-
-
-def agent_portrayal(agent):
-    portrayal = {"Shape": "circle",
-                 "Filled": "true",
-                 "Layer": 0,
-                 "Color": "red",
-                 "r": 0.5}
-    return portrayal
-'''''
