@@ -5,6 +5,7 @@
 
 # Imports
 from mesa.visualization.ModularVisualization import ModularServer
+import mesa
 
 from visualize import visualize_model
 from model import Festival

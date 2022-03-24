@@ -215,7 +215,19 @@ class Visitor(Agent):
                 if self.cup.full > 0:
                     self.reduce_thirst()  # Decide and act to reduce thirst
                 else:
-                    if random.randint(1,4) == 1:
+                    #empty cup decide whether to trow the cup away or get a drink
+                    trash = 0
+
+                    for neighbor in self.model.grid.neighbor_iter(self.pos):
+                        if isinstance(neighbor, Cup):
+                            if neighbor.on_floor == True:
+                                trash += 1
+                                print('Trash on the ground', trash)
+
+                    if trash > 2:  # Visitor critizes the cups on the ground
+                        self.drop_cup()
+
+                    else:
                         self.get_drink()
 
         else:
