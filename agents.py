@@ -157,9 +157,11 @@ class Visitor(Agent):
         self.cup.on_floor = True
         self.model.cups_on_floor += 1
         self.cup.pos = self.pos
+        self.condition = "HasNoCup"
         if self.unique_id == "v1":
             print(self.unique_id, 'DROPPING CUP!')
             print(self.model.cups_on_floor)
+        self.model.grid.place_agent(self.cup,self.cup.pos)
         self.cup = None
 
 
