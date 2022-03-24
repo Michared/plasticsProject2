@@ -154,6 +154,7 @@ class Visitor(Agent):
         if self.unique_id == "v1":
             print(self.unique_id, 'DROPPING CUP!')
             print(self.model.cups_on_floor)
+        self.model.grid.place_agent(self.cup,self.cup.pos)
         self.cup = None
 
 
@@ -217,12 +218,19 @@ class Visitor(Agent):
                 else:
                     #empty cup decide whether to trow the cup away or get a drink
                     trash = 0
-
-                    for neighbor in self.model.grid.neighbor_iter(self.pos):
-                        if isinstance(neighbor, Cup):
-                            if neighbor.on_floor == True:
-                                trash += 1
-                                print('Trash on the ground', trash)
+                    if self.unique_id == "v1":
+                        print(self.unique_id,"voor de for loop")
+                    #get_neighbors
+                    if self.unique_id == "v1":
+                        for neighbor in self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2):
+                            print(self.unique_id,"ik zit nu in de for loop")
+                            print(neighbor)
+                            if isinstance(neighbor, Cup) == True:
+                                print(self.unique_id,"ik zie nu een cup")
+                                if neighbor.on_floor == True:
+                                    print(self.unique_id,"De cup ligt op de vloer")
+                                    trash += 1
+                                    print(self.unique_id,'Trash on the ground', trash)
 
                     if trash > 2:  # Visitor critizes the cups on the ground
                         self.drop_cup()
