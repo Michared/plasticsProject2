@@ -52,7 +52,7 @@ class Cup(Agent):
         id = model.cup_id
 
         super().__init__(id, model)
-        self.full = 1.0
+        self.full = 200 #given out with 200 ml of content
         self.dirty = 0.0
         self.damaged = 0.0
         self.on_floor = False
@@ -76,7 +76,7 @@ class Visitor(Agent):
     y = None
     moore = True
 
-    def __init__(self, unique_id, model, willingness):
+    def __init__(self, unique_id, model, reluctance, thirst_rate, sip_size):
         '''
         Creates a new Visitor
 
@@ -90,13 +90,16 @@ class Visitor(Agent):
         '''
 
         super().__init__(unique_id, model)
-        self.thirst = 0
+        self.thirst = 20 # initial thirst is 20%
         self.cup = None
         self.condition = "HasNoCup"
         self.buying_drink = False
-        self.reluctance = willingness
+        self.reluctance = reluctance
+        self.thirst_rate = thirst_rate
+        self.sip_size = sip_size
+
         if self.unique_id == "v1":
-            print(self.unique_id, "has a reluctance of", self.reluctance)
+            print(self.unique_id, "I have a reluctance of", self.reluctance, ", a thirst rate of", self.thirst_rate, "% and a sip size of", self.sip_size, "ml")
 
     def random_move(self):
         '''
@@ -108,7 +111,11 @@ class Visitor(Agent):
         # Now move:
         self.model.grid.move_agent(self, next_move)
         if self.unique_id == "v1":
-            print(self.unique_id, "moving to", next_move, "my thirst is", self.thirst)
+            if self.cup is not None:
+                report_contents = "and my cup contains " + str(self.cup.full) + " / 200 ml"
+            else:
+                report_contents = "and I have no cup"
+            print(self.unique_id, "moving to", next_move, "my thirst is", self.thirst, '%', report_contents)
 
     def move_towards(self, pos):
         '''
@@ -127,7 +134,7 @@ class Visitor(Agent):
 
         # Now move
         if self.unique_id == "v1":
-            print(self.unique_id, 'current position is ' + str(self.pos), "my thirst is", self.thirst)
+            print(self.unique_id, 'current position is ' + str(self.pos), "my thirst is", self.thirst, "%")
         self.model.grid.move_agent(self, tuple(new))
         if self.unique_id == "v1":
             print(self.unique_id,'new position is ' + str(self.pos))
@@ -159,8 +166,6 @@ class Visitor(Agent):
     def buy_drink(self):
         #Buy new drink. If Visitor already has a cup, this cup is returned.
         self.buying_drink = False
-        if self.unique_id == "v1":
-            print(self.unique_id, "I'm done with getting a drink")
         if self.cup is not None:
             if self.unique_id == "v1":
                 print(self.unique_id,'RETURNING CUP!')
@@ -169,33 +174,37 @@ class Visitor(Agent):
             if self.unique_id == "v1":
                 print("cups that have been returned: ", self.model.cups_returned)
 
-        a = Cup(self.model) # doesn't work yet
+        a = Cup(self.model)
         self.model.schedule.add(a)
         self.cup = a
         self.condition = "HasCup"
         if self.unique_id == "v1":
-            print(self.unique_id,'Buying cup')
-
+            print(self.unique_id,'I bought a new drink, back to partying')
 
     def get_drink(self):
-        goal = self.find_stand()
+        if self.thirst < 80: # not thirsty enough
+            self.random_move()
+            return
         self.buying_drink = True
-        if self.unique_id == "v1":
-            print(self.unique_id, "I am now getting a drink")
+        goal = self.find_stand()
         if self.pos == goal:
             self.buy_drink()
         else:
+            if self.unique_id == "v1":
+                print(self.unique_id, "Getting a drink")
             self.move_towards(goal)
 
     def reduce_thirst(self):
 
-        if self.cup is not None and self.cup.full > 0.0:
+        if self.cup is not None and self.cup.full > 0:
                 #if random.randint(self.th)
                 # Take sip from cup
-                self.cup.full -= 0.5
-                self.thirst -= 5
                 if self.unique_id == "v1":
-                    print(self.unique_id, "my thirst is", self.thirst,'Drinking...')
+                    print(self.unique_id, "my thirst is", self.thirst,'%. Drinking...')
+                self.cup.full -= min(self.cup.full,
+                                     self.sip_size)  # sip size of 20ml or whatever amount under 20ml is remaining
+                self.thirst -= min(self.thirst,
+                                   20)  # thirst reduction of 20% or whatever amount of thirst is remaining
                 # Now move
                 self.random_move()
                 return
@@ -203,15 +212,13 @@ class Visitor(Agent):
     def step(self):
         if self.buying_drink:
             self.get_drink()
-        #the more thirsty you are the more likely you are to take a sip
-        if self.thirst >= 5 and not self.buying_drink:
+        elif self.thirst > 50: # threshold to take a sip if currently a cup
             if self.cup is None:
-                self.get_drink()
+                self.get_drink() # this function has a threshold higher than 50% thirst
+            elif self.cup.full > 0:
+                self.reduce_thirst()
             else:
-                if self.cup.full > 0:
-                    self.reduce_thirst()  # Decide and act to reduce thirst
-                else:
-                    self.get_drink()
+                self.get_drink() # this function has a threshold higher than 50% thirst
         else:
             self.random_move()
 
@@ -219,8 +226,8 @@ class Visitor(Agent):
             if self.reluctance > self.model.drinks_for_cup and self.cup.full <= 0:
                 self.drop_cup()
 
-        if self.thirst < 10:
-            self.thirst += 0.5
+        max_increase = 100 - self.thirst
+        self.thirst += min(self.thirst_rate, max_increase)
 
         # The agent's step will go here.
         # For demonstration purposes we will print the agent's unique_id

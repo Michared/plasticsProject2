@@ -23,8 +23,10 @@ class Festival (Model):
         # Create agents
         for i in range(self.num_visitors):
             name = "v"+str(i)
-            reluctance = round(max(self.random.normalvariate(0.5, 0.5), 0), 1) # how many drinks in return for a cup would result in this agent returning the cup
-            a = Visitor(name, self, reluctance)
+            reluctance = round(max(self.random.normalvariate(0.5, 1), 0), 1) # how many drinks in return for a cup would result in this agent returning the cup
+            thirst_rate = int(max(self.random.normalvariate(10, 1), 0)) # integer in range [0,100] representing how much thirstier Visitor becomes each timestep
+            sip_size = int(max(self.random.normalvariate(30, 10), 0)) # integer in range [0,200] representing how much ml is consumed each sip
+            a = Visitor(name, self, reluctance, thirst_rate, sip_size)
             self.schedule.add(a)
 
             #Add the agent to a random grid cell
