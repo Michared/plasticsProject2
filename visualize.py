@@ -34,7 +34,7 @@ def visualize_model(model, save=True, show=False):
     ax[0] = sns.heatmap(grid, ax=ax[0], cmap=colors, linewidths=.5, linecolor='black', cbar=True)
     colorbar = ax[0].collections[0].colorbar
     colorbar.set_ticks([0, 1, 2, 3])
-    colorbar.set_ticklabels(['Empty', 'Visitor without cup', 'Visitor with cup', 'Stand'])
+    colorbar.set_ticklabels(['Empty cell', 'Visitor without cup', 'Visitor with cup', 'Stand'])
 
     model_data = model.datacollector.get_model_vars_dataframe()
     ax[1] = sns.lineplot(data=model_data, ax=ax[1])

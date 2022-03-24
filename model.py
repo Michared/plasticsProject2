@@ -7,13 +7,21 @@ from agents import Visitor, Stand, Cup
 from mesa.datacollection import DataCollector
 
 """Functies die de waardes van het model bijhouden."""
-def get_cup_count(model):
+def get_cup_on_floor(model):
     # get the number of cups on the floor
     count = 0
     for g in model.schedule.agents:
         if isinstance(g, Cup):
             if g.on_floor == True:
                 count += 1
+    return count
+
+def get_cup(model):
+    # get the total number of cups in the model
+    count = 0
+    for g in model.schedule.agents:
+        if isinstance(g,Cup):
+            count += 1
     return count
 
 
@@ -32,7 +40,9 @@ class Festival (Model):
         self.drinks_for_cup = drinks_for_cup
 
         self.cups_on_floor = 0
-        self.datacollector = DataCollector({"agent_count": lambda m: get_cup_count(self)})
+        self.datacollector = DataCollector({"Lost cups": lambda m: get_cup_on_floor(self),
+                                            "Total cups": lambda m: get_cup(self)
+                                            })
 
         # Create agents
         for i in range(self.num_visitors):
