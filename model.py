@@ -29,7 +29,7 @@ def get_cup(model):
 class Festival (Model):
     """A model with some number of agents."""
 
-    def __init__(self, visitors=20, drinks_for_cup=0.5, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
+    def __init__(self, visitors=20, drinks_for_cup=1, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
         self.num_visitors = visitors
         self.pos_stands = stands
         self.schedule = RandomActivation(self)
@@ -47,7 +47,7 @@ class Festival (Model):
         # Create agents
         for i in range(self.num_visitors):
             name = "v"+str(i)
-            reluctance = round(max(self.random.normalvariate(0.5, 1), 0), 1) # how many drinks in return for a cup would result in this agent returning the cup
+            reluctance = round(max(self.random.normalvariate(0, 1), 0), 1) # how many drinks in return for a cup would result in this agent returning the cup
             thirst_rate = int(max(self.random.normalvariate(10, 1), 0)) # integer in range [0,100] representing how much thirstier Visitor becomes each timestep
             sip_size = int(max(self.random.normalvariate(30, 10), 0)) # integer in range [0,200] representing how much ml is consumed each sip
             a = Visitor(name, self, reluctance, thirst_rate, sip_size)
