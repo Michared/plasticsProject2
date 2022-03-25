@@ -19,9 +19,10 @@ class Stand(Agent):
         super().__init__(unique_id, model)
         self.pos = pos
         self.condition = "Stand"
+        self.cups = []
 
-    def sell_drink(self, Visitor):
-        if Visitor.cup is not None:
+    def sell_drink(self, visitor):
+        if visitor.cup is not None:
             print('Cup gets returned')
             self.model.schedule.remove(Visitor.cup)  # Return current cup
             self.model.cups_returned += 1
@@ -35,7 +36,7 @@ class Stand(Agent):
 
 class Cup(Agent):
     '''
-    Is created as full by Beerstand, moves with Visitor until it is either returned or dropped.
+    Is created as full by Stand, moves with Visitor until it is either returned or dropped.
     Can also be collected and damaged.
     '''
 
@@ -56,7 +57,15 @@ class Cup(Agent):
         self.dirty = 0.0
         self.damaged = 0.0
         self.on_floor = False
+        self.reuse_count = 0
+        self.condition = ""
 
+    def fill(self):
+        ''''
+        Fill cup
+        '''
+
+        self.full = 200
 
     def step(self):
         if self.on_floor == True:
@@ -144,8 +153,8 @@ class Visitor(Agent):
         Find the nearest Stand
         '''
 
-        options = [pos for pos in self.model.pos_stands]
-        nearest = min(options, key=lambda x: math.dist(x, self.pos))
+        options = [a for a in self.model.schedule.agents if isinstance(a, Stand)]
+        nearest = min(options, key=lambda x: math.dist(x.pos, self.pos))
 
         return nearest
 
@@ -165,21 +174,30 @@ class Visitor(Agent):
         self.cup = None
 
 
-    def buy_drink(self):
+    def buy_drink(self, stand):
         #Buy new drink. If Visitor already has a cup, this cup is returned.
         self.buying_drink = False
         if self.cup is not None:
             if self.unique_id == "v1":
                 print(self.unique_id,'RETURNING CUP!')
-            self.model.schedule.remove(self.cup) # Return current cup
+            self.cup.condition = "returned"
+            stand.cups.append(self.cup)
+            # self.model.schedule.remove(self.cup) # Return current cup
             self.model.cups_returned += 1
             if self.unique_id == "v1":
-                print("cups that have been returned: ", self.model.cups_returned)
+                print(stand.unique_id, "Cups that have been returned: ", self.model.cups_returned)
+        if len(stand.cups) > 0:
+            recycled_cup = stand.cups[-1] # last returned cup
+            recycled_cup.fill() # fill cup
+            recycled_cup.reuse_count += 1 # register recycle count
+            self.cup = recycled_cup # give cup to agent
+            stand.cups.pop() # remove cup from stand
+        else:
+            a = Cup(self.model)
+            self.model.schedule.add(a)
+            self.cup = a
+            self.condition = "HasCup"
 
-        a = Cup(self.model)
-        self.model.schedule.add(a)
-        self.cup = a
-        self.condition = "HasCup"
         if self.unique_id == "v1":
             print(self.unique_id,'I bought a new drink, back to partying')
 
@@ -189,12 +207,12 @@ class Visitor(Agent):
             return
         self.buying_drink = True
         goal = self.find_stand()
-        if self.pos == goal:
-            self.buy_drink()
+        if self.pos == goal.pos:
+            self.buy_drink(goal)
         else:
             if self.unique_id == "v1":
                 print(self.unique_id, "Getting a drink")
-            self.move_towards(goal)
+            self.move_towards(goal.pos)
 
     def reduce_thirst(self):
 

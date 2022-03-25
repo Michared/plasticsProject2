@@ -16,6 +16,16 @@ def get_cup_on_floor(model):
                 count += 1
     return count
 
+def get_reuse_count(model):
+    # get the total amount of times that cups have been recycled
+    count = 0
+    for g in model.schedule.agents:
+        if isinstance(g, Cup):
+            count += g.reuse_count
+
+    return count
+
+
 def get_cup(model):
     # get the total number of cups in the model
     count = 0
@@ -41,7 +51,8 @@ class Festival (Model):
 
         self.cups_on_floor = 0
         self.datacollector = DataCollector({"Lost cups": lambda m: get_cup_on_floor(self),
-                                            "Total cups": lambda m: get_cup(self)
+                                            "Total cups": lambda m: get_cup(self),
+                                            "Reuse count": lambda m: get_reuse_count(self),
                                             })
 
         # Create agents

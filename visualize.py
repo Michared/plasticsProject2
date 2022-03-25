@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 from agents import Cup
-from model import get_cup, get_cup_on_floor
+from model import get_cup, get_cup_on_floor, get_reuse_count
 
 
 def visualize_model(model, save=True, show=False):
@@ -17,12 +17,14 @@ def visualize_model(model, save=True, show=False):
     """""
     Percentage verloren cups berekenen
     """""
-    percentage = round(get_cup_on_floor(model) / get_cup(model),1)
+
+    lost_per_use = round(get_cup_on_floor(model) / (get_cup(model) + get_reuse_count(model)), 2) * 100
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 5), facecolor=(1, 1, 1), tight_layout=True)
 
-    title_text = "Visitors with empty or full cup" + " Height= " + str(model.grid.height) + " Width= " + str(
-        model.grid.width) + " t= " + str(model.schedule.steps) + " Percentage lost cups " + str(percentage)
+    title_text = "1 cup is worth " + str(model.drinks_for_cup) + " drink (grid = " + str(
+        model.grid.width) + " x " + str(model.grid.height) + ", N = " + str(model.num_visitors) + ", t = " \
+                 + str(model.schedule.steps) + ") Cups lost per cup used " + str(lost_per_use) + "%"
     fig.suptitle(title_text)
 
     filename = "plot_van_PlasticProject_ABM"
