@@ -1,5 +1,3 @@
-import random
-
 from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation

@@ -41,12 +41,6 @@ class Cup(Agent):
     '''
 
     def __init__(self, model):
-        '''
-        Creates a new Visitor
-
-        Args:
-            pos: (coordinate) location of the Visitor on the grid
-        '''
 
         model.cup_id += 1
 
@@ -73,7 +67,6 @@ class Cup(Agent):
                 self.dirty += 0.1
 
 
-
 class Visitor(Agent):
     '''
     Walks around on grid, buys drinks, takes sips from, drops or collects and returns cups.
@@ -86,17 +79,6 @@ class Visitor(Agent):
     moore = True
 
     def __init__(self, unique_id, model, reluctance, thirst_rate, sip_size):
-        '''
-        Creates a new Visitor
-
-        Args:
-        pos: (coordinate) location of the Visitor on the grid
-            x: The agent's current x coordinate
-            y: The agent's current y coordinate
-        grid: The MultiGrid object in which the agent lives.
-        moore: If True, may move in all 8 directions.
-                Otherwise, only up, down, left, right.
-        '''
 
         super().__init__(unique_id, model)
         self.thirst = 20 # initial thirst is 20%
@@ -167,17 +149,18 @@ class Visitor(Agent):
         self.model.cups_on_floor += 1
         self.cup.pos = self.pos
         self.condition = "HasNoCup"
+        self.model.grid.place_agent(self.cup,self.cup.pos) #place the agent in the grid
+        self.cup = None
+
         if self.unique_id == "v1":
             print(self.unique_id, 'DROPPING CUP!')
             print(self.model.cups_on_floor)
-        self.model.grid.place_agent(self.cup,self.cup.pos)
-        self.cup = None
-
 
     def buy_drink(self, stand):
         #Buy new drink. If Visitor already has a cup, this cup is returned.
         self.buying_drink = False
-        if self.cup is not None:
+
+        if self.cup is not None: # if the visitor already has a cup he returns the cup
             if self.unique_id == "v1":
                 print(self.unique_id,'RETURNING CUP!')
             self.cup.condition = "returned"
@@ -186,7 +169,7 @@ class Visitor(Agent):
             self.model.cups_returned += 1
             if self.unique_id == "v1":
                 print(stand.unique_id, "Cups that have been returned: ", self.model.cups_returned)
-        if len(stand.cups) > 0:
+        if len(stand.cups) > 0: # if the stand has any cups left they will sell a drink
             recycled_cup = stand.cups[-1] # last returned cup
             recycled_cup.fill() # fill cup
             recycled_cup.reuse_count += 1 # register recycle count
@@ -217,7 +200,6 @@ class Visitor(Agent):
     def reduce_thirst(self):
 
         if self.cup is not None and self.cup.full > 0:
-                #if random.randint(self.th)
                 # Take sip from cup
                 if self.unique_id == "v1":
                     print(self.unique_id, "my thirst is", self.thirst,'%. Drinking...')
@@ -246,9 +228,6 @@ class Visitor(Agent):
             if self.reluctance > self.model.drinks_for_cup and self.cup.full <= 0:
                 self.drop_cup()
 
+        #at the end of every step an agent gets more thirsty
         max_increase = 100 - self.thirst
         self.thirst += min(self.thirst_rate, max_increase)
-
-        # The agent's step will go here.
-        # For demonstration purposes we will print the agent's unique_id
-        # print("Hi, I am agent " + str(self.unique_id) + ". I am at position " + str(self.pos) + " and I have " +str(self.thirst) + " thirst.")
