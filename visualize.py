@@ -17,27 +17,31 @@ def visualize_model(model, save=True, show=False):
     """""
     Percentage verloren cups berekenen
     """""
-
     lost_per_use = round(get_cup_on_floor(model) / (get_cup(model) + get_reuse_count(model)), 2) * 100
 
+    #set up the lay-out for the grid and the graph
     fig, ax = plt.subplots(1, 2, figsize=(10, 5), facecolor=(1, 1, 1), tight_layout=True)
 
+    #Set up the title of the image
     title_text = "1 cup is worth " + str(model.drinks_for_cup) + " drink (grid = " + str(
         model.grid.width) + " x " + str(model.grid.height) + ", N = " + str(model.num_visitors) + ", t = " \
                  + str(model.schedule.steps) + ") Cups lost per cup used " + str(lost_per_use) + "%"
     fig.suptitle(title_text)
 
     filename = "plot_van_PlasticProject_ABM"
-    myColors = ('grey', 'green', 'red', 'blue')
+    myColors = ('grey', 'green', 'red', 'blue') #Choose the colors for the different types of agents in the grid
     colors = LinearSegmentedColormap.from_list('Custom', myColors, len(myColors))
     ax[0].set_aspect('equal')
 
-    grid = np.zeros((model.grid.height, model.grid.width))
+    """""Make the grid for later display"""""
+    grid = np.zeros((model.grid.height, model.grid.width)) #Make a grid filled with zero's
+
+    #Iterate trough all the agents and chance the value of their cell to their corresponding value
     for agent in model.schedule.agents:
             if not isinstance(agent, Cup):
                 grid[agent.pos] = color_map.get(agent.condition)
 
-
+    #Display the grid
     ax[0] = sns.heatmap(grid, ax=ax[0], cmap=colors, linewidths=.5, linecolor='black', cbar=True)
     colorbar = ax[0].collections[0].colorbar
     colorbar.set_ticks([0, 1, 2, 3])
