@@ -22,11 +22,14 @@ class Stand(Agent):
         self.cups = []
 
     def sell_drink(self, visitor):
-        if visitor.cup is not None:
+        #if visitor.cup is not None:
+        for cup in visitor.collected_cups:
+
             print('Cup gets returned')
-            self.model.schedule.remove(Visitor.cup)  # Return current cup
+            self.model.schedule.remove(cup)  # Return current cup
             self.model.cups_returned += 1
             print(self.model.cups_returned)
+
         a = Cup(self.model)
         self.model.schedule.add(a)
         Visitor.cup = a
@@ -63,8 +66,9 @@ class Cup(Agent):
 
     def step(self):
         if self.on_floor == True:
-            if random.randint(1,10) == 1 and self.dirty < 1:
+            if random.randint(1,5) == 1 and self.dirty < 1:
                 self.dirty += 0.1
+
 
 
 class Visitor(Agent):
@@ -83,6 +87,7 @@ class Visitor(Agent):
         super().__init__(unique_id, model)
         self.thirst = 20 # initial thirst is 20%
         self.cup = None
+        self.collected_cups = []
         self.condition = "HasNoCup"
         self.buying_drink = False
         self.reluctance = reluctance
@@ -144,17 +149,53 @@ class Visitor(Agent):
         '''
         Drop cup on the ground
         '''
-        
-        self.cup.on_floor = True
-        self.model.cups_on_floor += 1
-        self.cup.pos = self.pos
-        self.condition = "HasNoCup"
-        self.model.grid.place_agent(self.cup,self.cup.pos) #place the agent in the grid
-        self.cup = None
+        #we add a chance that you drop your cup depending on how much litter there is around you
+        trash = 0
+
+        for neighbor in self.model.grid.neighbor_iter(self.pos):
+            if isinstance(neighbor, Cup):
+                if neighbor.on_floor == True:
+                    trash += 1
+
+        odds = min(0.1 + trash/5, 1)
+
+        if random.random() < odds:
+            self.cup.on_floor = True
+            self.model.cups_on_floor += 1
+            print("cups on floor",self.model.cups_on_floor)
+            self.cup.pos = self.pos
+            self.condition = "HasNoCup"
+            self.model.grid.place_agent(self.cup,self.cup.pos) #place the agent in the grid
+            self.cup = None
 
         if self.unique_id == "v1":
             print(self.unique_id, 'DROPPING CUP!')
             print(self.model.cups_on_floor)
+
+    def collect_cup(self):
+        # we add a chance that you drop your cup depending on how much litter there is around you
+        possible = False
+
+        for neighbor in self.model.grid.neighbor_iter(self.pos):
+            if isinstance(neighbor, Cup):
+                if neighbor.on_floor == True and neighbor.dirty < 0.7:
+                    possible = True
+                    cup_to_pick = neighbor
+
+        if possible:
+            if random.random() < 0.2:
+                self.collected_cups.append(cup_to_pick)
+                cup_to_pick.on_floor = False
+                self.model.cups_on_floor -= 1
+                print("cups on floor", self.model.cups_on_floor)
+                self.condition = "HasCup"
+                self.model.grid.remove_agent(cup_to_pick)  #remove the agent from the grid
+
+
+        if self.unique_id == "v1":
+            print(self.unique_id, 'DROPPING CUP!')
+            print(self.model.cups_on_floor)
+
 
     def buy_drink(self, stand):
         #Buy new drink. If Visitor already has a cup, this cup is returned.
@@ -224,9 +265,12 @@ class Visitor(Agent):
         else:
             self.random_move()
 
-        if self.cup is not None:
-            if self.reluctance > self.model.drinks_for_cup and self.cup.full <= 0:
+        if self.cup is not None and self.cup.full <= 0:
+            if self.reluctance > self.model.drinks_for_cup:
                 self.drop_cup()
+            else:
+                self.collect_cup()
+
 
         #at the end of every step an agent gets more thirsty
         max_increase = 100 - self.thirst
