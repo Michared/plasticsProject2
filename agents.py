@@ -183,7 +183,7 @@ class Visitor(Agent):
                     cup_to_pick = neighbor
 
         if possible:
-            if random.random() < 0.2:
+            if random.random() < self.model.awareness:
                 self.collected_cups.append(cup_to_pick)
                 cup_to_pick.on_floor = False
                 self.model.cups_on_floor -= 1
