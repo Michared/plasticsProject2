@@ -5,8 +5,16 @@ from matplotlib.colors import LinearSegmentedColormap
 from agents import Cup
 from model import get_cup, get_cup_on_floor, get_reuse_count
 
+def visualize_batch(data):
+    '''Visualize the data from the batchrunner'''
+
+
 
 def visualize_model(model, save=True, show=False):
+    '''
+    Visualize the model in a grid (left) and a line graph (right)
+    '''
+
     color_map = {
         "Empty": 0,
         "HasNoCup": 1,
@@ -14,9 +22,7 @@ def visualize_model(model, save=True, show=False):
         "Stand": 3
     }
 
-    """""
-    Percentage verloren cups berekenen
-    """""
+    # percentage verloren cups berekenen
     lost_per_use = round(get_cup_on_floor(model) / (get_cup(model) + get_reuse_count(model)), 2) * 100
 
     #set up the lay-out for the grid and the graph
@@ -56,3 +62,5 @@ def visualize_model(model, save=True, show=False):
         plt.savefig(filename + ".png", dpi=100, bbox_inches='tight')
     if show:
         plt.show()
+
+    return lost_per_use

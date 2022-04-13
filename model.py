@@ -4,9 +4,10 @@ from mesa.time import RandomActivation
 from agents import Visitor, Stand, Cup
 from mesa.datacollection import DataCollector
 
-"""Functies die de waardes van het model bijhouden."""
+
 def get_cup_on_floor(model):
-    # get the number of cups on the floor
+    '''Return the number of cups on the floor'''
+
     count = 0
     for g in model.schedule.agents:
         if isinstance(g, Cup):
@@ -15,7 +16,8 @@ def get_cup_on_floor(model):
     return count
 
 def get_reuse_count(model):
-    # get the total amount of times that cups have been recycled
+    '''Return total amount of times that cups have been reused'''
+
     count = 0
     for g in model.schedule.agents:
         if isinstance(g, Cup):
@@ -25,7 +27,8 @@ def get_reuse_count(model):
 
 
 def get_cup(model):
-    # get the total number of cups in the model
+    '''Return total number of cups in the model'''
+
     count = 0
     for g in model.schedule.agents:
         if isinstance(g,Cup):
@@ -35,9 +38,13 @@ def get_cup(model):
 
 
 class Festival (Model):
-    """A model with some number of agents."""
+    """A model that represents a festival terrain, in which Visitor agents move around and interact with Stands and Cups.
+    The model is designed to analyze cup recycling behavior"""
 
-    def __init__(self, visitors=200, drinks_for_cup=1, reluctance_avg = 0.8, awareness = 0.2, stands=((2, 5), (8, 7), (12,12)), width=15, height=15):
+    def __init__(self, drinks_for_cup=1, reluctance_avg=0.5, awareness=0.05, stands=((2, 5), (8, 7), (12, 12)), visitors=200, width=15, height=15, name='Base case', verbose=False):
+        super().__init__()
+        self.name = name
+        self.verbose = verbose
         self.num_visitors = visitors
         self.pos_stands = stands
         self.schedule = RandomActivation(self)
@@ -70,12 +77,20 @@ class Festival (Model):
             self.grid.place_agent(a, (x, y))
 
         def place_stand(pos, name, model):
+            '''
+            Place a single stand at indicated coordinate
+            '''
+
             print("placing stand "+str(name)+" at "+str(pos))
             a = Stand(name, pos, model)
             model.schedule.add(a)
             model.grid.place_agent(a, pos)
 
         def place_stands(*args, model):
+            '''
+            Place multiple stands at the indicated coordinates
+            '''
+
             existing = []
             for arg in args:
                 assert isinstance(arg, tuple)
@@ -88,9 +103,11 @@ class Festival (Model):
 
 
     def step(self):
-        """Advance the model by one step."""
+        """Advance the model by one step and collect data"""
+
         self.schedule.step()
-        """Verzamel de data."""
+
+        # collect data
         self.datacollector.collect(self)
 
 
