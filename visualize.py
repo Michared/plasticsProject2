@@ -32,8 +32,6 @@ def visualize_batch(df, length):
 
     sns.set(style="whitegrid")
     fig, ax = plt.subplots(figsize=(10, 5), tight_layout=True)
-    palette = sns.color_palette('Greys')
-    sns.set_color_codes("muted")
     ax = sns.barplot(x="name", y="percentage lost", data=result_df)
 
     plt.show()
