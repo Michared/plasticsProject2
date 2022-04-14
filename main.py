@@ -1,3 +1,5 @@
+import pandas as pd
+
 from visualize import visualize_model, visualize_batch
 from mesa.batchrunner import FixedBatchRunner
 from model import Festival
@@ -17,7 +19,7 @@ if __name__ == '__main__':
 
     if batch_experiment:
         batch_size = 1
-        steps = 200
+        steps = 5
 
         # define the base case and variable names that will be varied
         variable_names = ['name', 'drinks_for_cup', 'reluctance_avg', 'awareness', 'stands'] # these vars will be varied
@@ -52,6 +54,19 @@ if __name__ == '__main__':
         all_scenarios = FixedBatchRunner(Festival, parameters_list=param_set, iterations=batch_size, display_progress=True, max_steps=steps)
         all_scenarios.run_all()
         data = all_scenarios.get_collector_model()
-        print(data)
 
-        visualize_batch(data)
+        # convert to dataframe
+        new_keys = ['Base case'] + scenario_names
+        new_data = dict()
+
+        for key, new_key in zip(data.keys(), new_keys):
+            new_data[new_key] = data[key]
+
+        l = list(new_data.values())
+        k = list(new_data.keys())
+        print(str(l))
+
+        df = pd.concat(l, keys=k, axis=0).reset_index(level=1)
+        print(df.loc['Variation 3'])
+
+        visualize_batch(df)
