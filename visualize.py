@@ -1,14 +1,42 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 from agents import Cup
 from model import get_cup, get_cup_on_floor, get_reuse_count
 
-def visualize_batch(data):
+def visualize_batch(df, length):
     '''Visualize the data from the batchrunner'''
 
+    # first only retreive end values to get % lost cups per used cup
+    fr = length - 1
+    to = length
 
+    print(df.index.unique())
+    result_list = []
+    for k in df.index.unique():
+        result = []
+        lost_cups = df.loc[k, 'Lost cups'][fr:to].values[0]
+        total_cups = df.loc[k, 'Total cups'][fr:to].values[0]
+        reused_cups = df.loc[k, 'Reuse count'][fr:to].values[0]
+        perc_lost_cups = lost_cups / (total_cups + reused_cups)
+        value = round(perc_lost_cups, 2) * 100
+
+        result.append(k)
+        result.append(value)
+        result_list.append(result)
+
+    result_df = pd.DataFrame.from_records(result_list, columns =['name', 'percentage lost'])
+    print(str(result_df))
+
+    sns.set(style="whitegrid")
+    fig, ax = plt.subplots(figsize=(10, 5), tight_layout=True)
+    palette = sns.color_palette('Greys')
+    sns.set_color_codes("muted")
+    ax = sns.barplot(x="name", y="percentage lost", data=result_df)
+
+    plt.show()
 
 def visualize_model(model, save=True, show=False):
     '''

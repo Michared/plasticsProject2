@@ -60,6 +60,7 @@ class Festival (Model):
         self.datacollector = DataCollector({"Lost cups": lambda m: get_cup_on_floor(self),
                                             "Total cups": lambda m: get_cup(self),
                                             "Reuse count": lambda m: get_reuse_count(self),
+                                            # "% lost": lambda m: round(get_cup_on_floor(self) / (get_cup(self) + get_reuse_count(self)), 2) * 100
                                             })
 
         # Create agents

@@ -10,6 +10,7 @@ if __name__ == '__main__':
 
     manual_run = False # run one scenario, fast
     batch_experiment = True # compare scenarios, more computation
+    policy_switch = True # Whether to run with or without policy
 
     if manual_run:
         model = Festival()
@@ -18,12 +19,16 @@ if __name__ == '__main__':
         visualize_model(model)
 
     if batch_experiment:
-        batch_size = 1
-        steps = 5
+        batch_size = 10
+        steps = 200
+        if policy_switch:
+            policy = 1
+        else:
+            policy = 0
 
         # define the base case and variable names that will be varied
         variable_names = ['name', 'drinks_for_cup', 'reluctance_avg', 'awareness', 'stands'] # these vars will be varied
-        base_case = ['Base case', 0, 0.5, 0.05, ((2, 5), (8, 7), (12, 12))] # these are the default values
+        base_case = ['Base case', policy, 0.5, 0.05, ((2, 5), (8, 7), (12, 12))] # these are the default values
         base_case_dict = dict(zip(variable_names, base_case))
 
         # define the six variations to the base case
@@ -67,6 +72,5 @@ if __name__ == '__main__':
         print(str(l))
 
         df = pd.concat(l, keys=k, axis=0).reset_index(level=1)
-        print(df.loc['Variation 3'])
-
-        visualize_batch(df)
+        print(df)
+        visualize_batch(df, steps)
